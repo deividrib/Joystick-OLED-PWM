@@ -9,9 +9,9 @@ Este projeto tem como objetivo demonstrar o uso do conversor analógico-digital 
    - Implementação de uma zona morta (dead zone) para evitar variações muito pequenas.
 
 2. **Controle de LEDs via PWM**
-   - LED Vermelho (GPIO11) controlado pela variação do eixo X.
+   - LED Vermelho (GPIO13) controlado pela variação do eixo X.
    - LED Azul (GPIO12) controlado pela variação do eixo Y.
-   - LED Verde (GPIO13) ligado/desligado pelo botão do joystick.
+   - LED Verde (GPIO11) ligado/desligado pelo botão do joystick.
 
 3. **Exibição em Display OLED SSD1306 (128×64)**
    - Exibe um quadrado 8×8 cuja posição é atualizada em função dos valores do joystick.
