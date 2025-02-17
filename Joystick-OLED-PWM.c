@@ -33,8 +33,11 @@
 volatile uint32_t last_time_btnA = 0;
 volatile uint32_t last_time_jsBtn = 0;
 volatile bool pwm_enabled = true;
-volatile bool led_green_state = false; // Estado do LED Verde (GPIO13)
+volatile bool led_green_state = false; // Estado do LED Verde (GPIO11)
 volatile uint8_t border_style = 0;       // Estilo de borda: 0 = sólida; 1 = pontilhada
+
+// Variável para controlar o tempo de exibição da mensagem PWM
+volatile uint32_t pwm_message_time = 0;
 
 uint slice_num_R, slice_num_B;
 uint channel_R, channel_B;
@@ -60,6 +63,8 @@ void gpio_callback(uint gpio, uint32_t events) {
         if (now - last_time_btnA < DEBOUNCE_TIME) return;
         last_time_btnA = now;
         pwm_enabled = !pwm_enabled;
+        // Registra o momento da alteração para exibir a mensagem por 2 segundos
+        pwm_message_time = now;
     }
 }
 
@@ -149,7 +154,7 @@ int main() {
         pwm_set_chan_level(slice_num_R, channel_R, duty_R);
         pwm_set_chan_level(slice_num_B, channel_B, duty_B);
 
-        // Mapeamento CORRIGIDO:
+        // Mapeamento:
         // Para o eixo X, mapeamos normalmente.
         // Para o eixo Y, invertemos a leitura para que "para cima" corresponda a menor valor.
         uint8_t square_x = (adc_x * (display.width - 8)) / 4095;
@@ -161,12 +166,16 @@ int main() {
         draw_border(&display, border_style);
         // Desenha o quadrado 8x8 na posição mapeada
         ssd1306_draw_bitmap(&display, square_x, square_y, &font[quadrado_index]);
-        // Exibe o status do PWM na parte inferior do display
-        char status[20];
-        snprintf(status, sizeof(status), "PWM: %s", pwm_enabled ? "ON" : "OFF");
-        ssd1306_draw_string(&display, status, 40, 48);
-        ssd1306_send_data(&display);
 
+        // Exibe o status do PWM apenas se estiver dentro do período de 2 segundos após a alteração
+        uint32_t current_time = to_us_since_boot(get_absolute_time());
+        if (current_time - pwm_message_time < 2000000) { // 2 segundos em microsegundos
+            char status[20];
+            snprintf(status, sizeof(status), "PWM: %s", pwm_enabled ? "ON" : "OFF");
+            ssd1306_draw_string(&display, status, 40, 48);
+        }
+        
+        ssd1306_send_data(&display);
         sleep_ms(100);
     }
 }
