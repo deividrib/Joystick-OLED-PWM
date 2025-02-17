@@ -8,9 +8,9 @@
 #include "font.h"
 
 // Definições dos pinos conforme especificado na atividade
-#define LED_R_PIN      11   // LED Vermelho (controlado via PWM pelo eixo X)
+#define LED_R_PIN      13   // LED Vermelho (controlado via PWM pelo eixo X)
 #define LED_B_PIN      12   // LED Azul (controlado via PWM pelo eixo Y)
-#define LED_G_PIN      13   // LED Verde (alternado pelo botão do joystick)
+#define LED_G_PIN      11   // LED Verde (alternado pelo botão do joystick)
 
 #define JOYSTICK_X_ADC 0    // ADC canal para o eixo X (GPIO26)
 #define JOYSTICK_Y_ADC 1    // ADC canal para o eixo Y (GPIO27)
@@ -41,25 +41,6 @@ uint channel_R, channel_B;
 
 // Instância do display SSD1306
 ssd1306_t display;
-
-// Função para desenhar a borda do display de acordo com o estilo
-void draw_border(ssd1306_t *ssd, uint8_t style) {
-    if (style == 0) {
-        // Borda sólida: desenha um retângulo completo ao redor do display
-        ssd1306_rect(ssd, 0, 0, ssd->width, ssd->height, 1, false);
-    } else if (style == 1) {
-        // Borda pontilhada: desenha pontos espaçados nas bordas
-        for (uint8_t x = 0; x < ssd->width; x += 2) {
-            ssd1306_pixel(ssd, x, 0, 1);
-            ssd1306_pixel(ssd, x, ssd->height - 1, 1);
-            }
-        }
-        for (uint8_t y = 0; y < ssd->height; y += 2) {
-            ssd1306_pixel(ssd, 0, y, 1);
-            ssd1306_pixel(ssd, ssd->width - 1, y, 1);
-        }
-    }
-
 
 // Callback de interrupção para os botões (joystick e botão A)
 // Utiliza-se debounce para evitar acionamentos múltiplos
@@ -183,7 +164,7 @@ int main() {
         // Exibe o status do PWM na parte inferior do display
         char status[20];
         snprintf(status, sizeof(status), "PWM: %s", pwm_enabled ? "ON" : "OFF");
-        ssd1306_draw_string(&display, status, 0, 56);
+        ssd1306_draw_string(&display, status, 40, 48);
         ssd1306_send_data(&display);
 
         sleep_ms(100);

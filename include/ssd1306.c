@@ -16,7 +16,8 @@ void ssd1306_init(ssd1306_t *ssd, uint8_t width, uint8_t height, bool external_v
 void ssd1306_config(ssd1306_t *ssd) {
   ssd1306_command(ssd, SET_DISP | 0x00);
   ssd1306_command(ssd, SET_MEM_ADDR);
-  ssd1306_command(ssd, 0x01);
+  ssd1306_command(ssd, 0x00);
+  
   ssd1306_command(ssd, SET_DISP_START_LINE | 0x00);
   ssd1306_command(ssd, SET_SEG_REMAP | 0x01);
   ssd1306_command(ssd, SET_MUX_RATIO);
@@ -69,12 +70,18 @@ void ssd1306_send_data(ssd1306_t *ssd) {
 }
 
 void ssd1306_pixel(ssd1306_t *ssd, uint8_t x, uint8_t y, bool value) {
-  uint16_t index = (y >> 3) + (x << 3) + 1;
-  uint8_t pixel = (y & 0b111);
+  if (x >= ssd->width || y >= ssd->height)
+      return; // Evita acesso fora dos limites
+
+  // Calcula o índice corretamente: 
+  // - A primeira posição do buffer é o byte de controle, por isso soma 1.
+  // - Cada página (8 linhas) tem 'width' bytes.
+  uint16_t index = 1 + x + (y / 8) * ssd->width;
+  uint8_t bit = 1 << (y % 8);
   if (value)
-    ssd->ram_buffer[index] |= (1 << pixel);
+      ssd->ram_buffer[index] |= bit;
   else
-    ssd->ram_buffer[index] &= ~(1 << pixel);
+      ssd->ram_buffer[index] &= ~bit;
 }
 
 /*
@@ -232,6 +239,23 @@ void ssd1306_draw_bitmap(ssd1306_t *ssd, uint8_t x, uint8_t y, const uint8_t *bi
       uint8_t col = bitmap[i];
       for (uint8_t j = 0; j < 8; j++) {
           ssd1306_pixel(ssd, x + i, y + j, (col & (1 << j)) ? 1 : 0);
+      }
+  }
+}
+
+void draw_border(ssd1306_t *ssd, uint8_t style) {
+  if (style == 0) {
+      // Borda sólida: desenha um retângulo completo ao redor do display
+      ssd1306_rect(ssd, 0, 0, ssd->width, ssd->height, 1, false);
+  } else if (style == 1) {
+      // Borda pontilhada: desenha pontos espaçados nas bordas
+      for (uint8_t x = 0; x < ssd->width; x += 2) {
+          ssd1306_pixel(ssd, x, 0, 1);
+          ssd1306_pixel(ssd, x, ssd->height - 1, 1);
+      }
+      for (uint8_t y = 0; y < ssd->height; y += 2) {
+          ssd1306_pixel(ssd, 0, y, 1);
+          ssd1306_pixel(ssd, ssd->width - 1, y, 1);
       }
   }
 }
