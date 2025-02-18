@@ -49,7 +49,7 @@ Este projeto tem como objetivo demonstrar o uso do conversor analógico-digital 
 
 ## Demonstração em Vídeo
 
-[Insira aqui o link para o vídeo de demonstração](https://exemplo.com/video)
+[https://www.youtube.com/shorts/UeYksnNCtPc](https://www.youtube.com/shorts/UeYksnNCtPc)
 
 ## Autor
 
